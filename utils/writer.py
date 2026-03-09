@@ -32,7 +32,7 @@ Return ONLY a raw JSON object (no markdown fences, no extra text):
 }}"""
 
     response = client.models.generate_content(
-        model="gemini-1.5-flash-latest",
+        model="gemini-1.5-flash",
         contents=prompt
     )
     text = response.text.strip()
