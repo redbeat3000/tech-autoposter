@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: pip install requests google-generativeai requests-oauthlib
+        run: pip install requests google-genai requests-oauthlib
       - name: Determine slot
         run: |
           HOUR=$(date -u +"%H")
