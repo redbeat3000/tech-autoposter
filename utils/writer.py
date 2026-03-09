@@ -1,12 +1,11 @@
-"""Generate a full blog article using Gemini 1.5 Flash (free)."""
+"""Generate a full blog article using Gemini 2.0 Flash (free)."""
 import os, json
-import google.generativeai as genai
+from google import genai
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 def write_article(topic: str, headlines: list[str]) -> dict:
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     prompt = f"""You are an expert tech journalist writing for a broad developer audience.
 
@@ -32,14 +31,14 @@ Return ONLY a raw JSON object (no markdown fences, no extra text):
   "html_content": "Full article in HTML (use <h2>, <p>, <strong> tags)"
 }}"""
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
     text = response.text.strip()
-
-    # Strip code fences if Gemini wraps in them
     if text.startswith("```"):
         text = text.split("```")[1]
         if text.startswith("json"):
             text = text[4:]
     text = text.strip().rstrip("```").strip()
-
     return json.loads(text)
