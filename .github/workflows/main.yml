@@ -1,0 +1,55 @@
+name: Multi-Platform Auto-Poster
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+    - cron: "0 10 * * *"
+    - cron: "0 16 * * *"
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: "Slot: 0=morning, 1=afternoon, 2=evening"
+        required: false
+        default: "0"
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install requests google-generativeai requests-oauthlib
+      - name: Determine slot
+        run: |
+          HOUR=$(date -u +"%H")
+          if [ "${{ github.event.inputs.slot }}" != "" ]; then
+            echo "SLOT=${{ github.event.inputs.slot }}" >> $GITHUB_ENV
+          elif [ "$HOUR" -lt "8" ]; then
+            echo "SLOT=0" >> $GITHUB_ENV
+          elif [ "$HOUR" -lt "13" ]; then
+            echo "SLOT=1" >> $GITHUB_ENV
+          else
+            echo "SLOT=2" >> $GITHUB_ENV
+          fi
+      - name: Run auto-poster
+        run: python main.py $SLOT
+        env:
+          GEMINI_API_KEY:          ${{ secrets.GEMINI_API_KEY }}
+          NEWS_API_KEY:            ${{ secrets.NEWS_API_KEY }}
+          DEVTO_API_KEY:           ${{ secrets.DEVTO_API_KEY }}
+          HASHNODE_TOKEN:          ${{ secrets.HASHNODE_TOKEN }}
+          HASHNODE_PUB_ID:         ${{ secrets.HASHNODE_PUB_ID }}
+          WP_TOKEN:                ${{ secrets.WP_TOKEN }}
+          WP_SITE_ID:              ${{ secrets.WP_SITE_ID }}
+          BLOGGER_BLOG_ID:         ${{ secrets.BLOGGER_BLOG_ID }}
+          BLOGGER_CLIENT_ID:       ${{ secrets.BLOGGER_CLIENT_ID }}
+          BLOGGER_CLIENT_SECRET:   ${{ secrets.BLOGGER_CLIENT_SECRET }}
+          BLOGGER_REFRESH_TOKEN:   ${{ secrets.BLOGGER_REFRESH_TOKEN }}
+          TUMBLR_BLOG:             ${{ secrets.TUMBLR_BLOG }}
+          TUMBLR_CONSUMER_KEY:     ${{ secrets.TUMBLR_CONSUMER_KEY }}
+          TUMBLR_CONSUMER_SECRET:  ${{ secrets.TUMBLR_CONSUMER_SECRET }}
+          TUMBLR_TOKEN:            ${{ secrets.TUMBLR_TOKEN }}
+          TUMBLR_TOKEN_SECRET:     ${{ secrets.TUMBLR_TOKEN_SECRET }}
